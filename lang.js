@@ -96,4 +96,56 @@ function parseKeyword(tokens, index)
     }, index];
 }
 
-console.log(parse(lex("(parek (rizek 1 2) 3 cs)"), 0)[0].children)
+function evalNodes(nodes)
+{
+    nodes.forEach(evalNode);
+}
+
+function evalNode(node)
+{
+    return evalOsc(node);
+}
+
+function evalNumber(node)
+{
+    if (node.type !== 'number') {
+        throw new Error('Expected number');
+    }
+
+    return node;
+}
+
+function evalKeyword(node) 
+{
+    if (node.type !== 'keyword') {
+        throw new Error('Expected keyword');
+    }
+
+    return node;
+}
+
+function evalOsc(node)
+{
+    if (node.type !== 'list') {
+        throw new Error('Expected list');
+    }
+
+    if (node.value !== 'osc') {
+        throw new Error('Expected osc');
+    }
+
+    if (node.children.length !== 2) {
+        throw new Error('Expected 2 arguments');
+    }
+
+    let freq = evalNumber(node.children[0]);
+    let color = evalKeyword(node.children[1]);
+
+    let osc = context.createOscillator();
+    osc.type = color.value;
+    osc.frequency.value = freq.value;
+    osc.connect(context.destination);
+    osc.start();
+
+    return { type: 'void', value: null};
+}
